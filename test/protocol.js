@@ -19,6 +19,32 @@ function createPipeline(t) {
   return { vent: vent, sink: sink }
 }
 
+function sendAndCheck(t, pipeline, msg) {
+  var expected = Array.isArray(msg) ? msg : [msg]
+
+  validateNextChunk(t, pipeline, expected)
+  pipeline.vent.write(msg)
+}
+
+function validateNextChunk(t, pipeline, expected) {
+  t.plan(2 + 2 * expected.length)
+
+  pipeline.sink.on('data', function (msg) {
+    validateData(t, msg, expected)
+  })
+}
+
+function validateData(t, input, expected) {
+  t.ok(Array.isArray(input), 'is Array')
+  t.ok(input.length === expected.length, 'has ' + expected.length + ' frame(s)')
+
+  input.forEach(function (frame, index) {
+    t.ok(Buffer.isBuffer(frame), 'frame ' + index + ' is Buffer')
+    // We use String here for empty Buffers, as Buffer(0) != Buffer(0).
+    t.ok(frame == String(expected[index]), 'frame ' + index + ' matches')
+  })
+}
+
 test('empty message', function (t) {
   var pipeline = createPipeline(t)
 
@@ -33,149 +59,71 @@ test('empty message', function (t) {
 test('empty Buffer message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(4)
+  sendAndCheck(t, pipeline, new Buffer(0))
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 1, 'has 1 frame')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '', 'is matching frame')
-  })
-
-  pipeline.vent.write(new Buffer(0))
   pipeline.vent.end()
 })
 
 test('empty String message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(4)
+  sendAndCheck(t, pipeline, '')
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 1, 'has 1 frame')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '', 'is matching frame')
-  })
-
-  pipeline.vent.write('')
   pipeline.vent.end()
 })
 
 test('small Buffer message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(4)
+  sendAndCheck(t, pipeline, new Buffer('1234'))
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 1, 'has 1 frame')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '1234', 'is matching frame')
-  })
-
-  pipeline.vent.write(new Buffer('1234'))
   pipeline.vent.end()
 })
 
 test('small String message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(4)
+  sendAndCheck(t, pipeline, '1234')
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 1, 'has 1 frame')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '1234', 'is matching frame')
-  })
-
-  pipeline.vent.write('1234')
   pipeline.vent.end()
 })
 
 test('small, single-String-element Array message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(4)
+  sendAndCheck(t, pipeline, ['1234'])
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 1, 'has 1 frame')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '1234', 'is matching frame')
-  })
-
-  pipeline.vent.write(['1234'])
   pipeline.vent.end()
 })
 
 test('small, single-Buffer-element Array message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(4)
+  sendAndCheck(t, pipeline, [new Buffer ('1234')])
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 1, 'has 1 frame')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '1234', 'is matching frame')
-  })
-
-  pipeline.vent.write([new Buffer('1234')])
   pipeline.vent.end()
 })
 
 test('small, double-String-element Array message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(6)
+  sendAndCheck(t, pipeline, ['1234', '5678'])
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 2, 'has 2 frames')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(Buffer.isBuffer(msg[1]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '1234', 'is matching frame')
-    t.ok(String(msg[1]) === '5678', 'is matching frame')
-  })
-
-  pipeline.vent.write(['1234', '5678'])
   pipeline.vent.end()
 })
 
 test('small, mixed-element Array message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(6)
+  sendAndCheck(t, pipeline, [new Buffer('1234'), '5678'])
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 2, 'has 2 frames')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(Buffer.isBuffer(msg[1]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '1234', 'is matching frame')
-    t.ok(String(msg[1]) === '5678', 'is matching frame')
-  })
-
-  pipeline.vent.write([new Buffer('1234'), '5678'])
   pipeline.vent.end()
 })
 
 test('small, double-Buffer-element Array message', function (t) {
   var pipeline = createPipeline(t)
 
-  t.plan(6)
+  sendAndCheck(t, pipeline, [new Buffer('1234'), new Buffer('5678')])
 
-  pipeline.sink.on('data', function (msg) {
-    t.ok(Array.isArray(msg), 'is Array')
-    t.ok(msg.length === 2, 'has 2 frames')
-    t.ok(Buffer.isBuffer(msg[0]), 'is Buffer frame')
-    t.ok(Buffer.isBuffer(msg[1]), 'is Buffer frame')
-    t.ok(String(msg[0]) === '1234', 'is matching frame')
-    t.ok(String(msg[1]) === '5678', 'is matching frame')
-  })
-
-  pipeline.vent.write([new Buffer('1234'), new Buffer('5678')])
   pipeline.vent.end()
 })
