@@ -4,7 +4,7 @@
   "description": "A simple messaging library with no dependencies.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/*.js | faucet"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/Schoonology/messaging/issues"
   },
-  "homepage": "https://github.com/Schoonology/messaging"
+  "homepage": "https://github.com/Schoonology/messaging",
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "tape": "~3.5.0"
+  },
+  "dependencies": {
+    "network-byte-order": "~0.2.0"
+  }
 }
