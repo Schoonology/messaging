@@ -1,3 +1,4 @@
+/* eslint-disable no-sync, eqeqeq */
 'use strict'
 
 var fs = require('fs')
@@ -102,7 +103,7 @@ test('small, single-String-element Array message', function (t) {
 test('small, single-Buffer-element Array message', function (t) {
   var pipeline = createPipeline(t)
 
-  sendAndCheck(t, pipeline, [new Buffer ('1234')])
+  sendAndCheck(t, pipeline, [new Buffer('1234')])
 
   pipeline.vent.end()
 })
