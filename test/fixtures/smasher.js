@@ -1,5 +1,6 @@
 /**
- * TODO: Description.
+ * Smasher is a malicious Transform stream that breaks incoming Buffers into
+ * randomly-sized, smaller Buffers.
  */
 var stream = require('stream')
   , util = require('util')
@@ -7,7 +8,9 @@ var stream = require('stream')
 /**
  * Creates a new instance of Smasher with the provided `options`.
  *
- * @param {Object} options
+ * Available options:
+ * - `min` - The smallest chunk size to generate.
+ * - `max` - The biggest chunk size to generate.
  */
 function Smasher(options) {
   if (!(this instanceof Smasher)) {
@@ -24,13 +27,13 @@ function Smasher(options) {
 util.inherits(Smasher, stream.Transform)
 
 /**
- * TODO: Description.
+ * Smashes the incoming `chunk` into many smaller chunks.
  */
 Smasher.prototype._transform = function _transform(chunk, encoding, callback) {
   var size
 
   while (chunk.length) {
-    size = this._getPacketSize()
+    size = this._getNextChunkSize()
 
     this.push(chunk.slice(0, size))
     chunk = chunk.slice(size)
@@ -40,9 +43,9 @@ Smasher.prototype._transform = function _transform(chunk, encoding, callback) {
 }
 
 /**
- * TODO: Description.
+ * Internal helper to get the desired size for the next chunk.
  */
-Smasher.prototype._getPacketSize = function _getPacketSize() {
+Smasher.prototype._getNextChunkSize = function _getNextChunkSize() {
   return Math.floor(Math.random() * (this._max - this._min)) + this._min
 }
 
