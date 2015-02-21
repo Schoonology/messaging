@@ -7,9 +7,10 @@ var fs = require('fs')
   , test = require('tape')
   , Builder = require('../lib/protocol/builder')
   , Parser = require('../lib/protocol/parser')
+  , Smasher = require('./fixtures/smasher')
   , LONG_FRAME = fs.readFileSync(path.join(__dirname, 'fixtures', 'long'))
 
-function createPipeline(t) {
+function createPipeline(t, intermediary) {
   var vent = new stream.PassThrough({ objectMode: true })
     , sink = new stream.PassThrough({ objectMode: true })
 
@@ -17,6 +18,7 @@ function createPipeline(t) {
 
   vent
     .pipe(new Builder())
+    .pipe(intermediary || new stream.PassThrough())
     .pipe(new Parser())
     .pipe(sink)
 
@@ -220,4 +222,12 @@ test('kitchen sink', function (t) {
   })
 
   sendAndCheck(t, pipeline, ['start'])
+})
+
+test('smashed to bytes', function (t) {
+  var pipeline = createPipeline(t, new Smasher({ min: 1, max: 1 }))
+
+  sendAndCheck(t, pipeline, [LONG_FRAME])
+
+  pipeline.vent.end()
 })
