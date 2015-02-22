@@ -51,7 +51,7 @@ test('tcp wildcard connection', function (t) {
   })
 
   server.on('listening', function () {
-    var client = common.createClientSocket('tcp://' + server.address().address + ':' + server.address().port)
+    var client = common.createClientSocket(server.address())
 
     t.ok(client, 'client exists')
 
@@ -107,7 +107,7 @@ test('ipc wildcard connection', function (t) {
   })
 
   server.on('listening', function () {
-    var client = common.createClientSocket('ipc://' + server.address())
+    var client = common.createClientSocket(server.address())
 
     t.ok(client, 'client exists')
 
