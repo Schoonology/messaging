@@ -2,9 +2,9 @@
   "name": "messaging",
   "version": "0.1.0",
   "description": "A simple messaging library with no dependencies.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "node test/*.js | faucet"
+    "test": "node test | faucet"
   },
   "repository": {
     "type": "git",
