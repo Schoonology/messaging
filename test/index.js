@@ -2,4 +2,5 @@
 
 require('./protocol')
 require('./transports')
-require('./pubsub')
+require('./pub-sub')
+require('./router-dealer')
