@@ -20,14 +20,14 @@ test('router bound tcp', function (t) {
 
   router.bind('tcp://*:*')
 
-  router.on('message', function (msg) {
+  router.on('data', function (msg) {
     t.ok(msg.length === 2, 'message has 2 frames')
     t.ok(msg[0], 'identity exists')
     t.ok(msg[1] == '1234567890', 'body matches')
 
     msg[1] = String(msg[1]).split('').reverse().join('')
 
-    router.send(msg)
+    router.write(msg)
   })
 
   dealer.on('message', function (msg) {
@@ -65,7 +65,7 @@ test('dealer round robin', function (t) {
   two.bind('tcp://*:*')
 
   one.received = []
-  one.on('message', function (msg) {
+  one.on('data', function (msg) {
     one.received.push(msg[1])
     if (one.received.length === 5) {
       t.ok(validateArr(one.received, ['1', '3', '5', '7', '9']), 'received all')
@@ -73,7 +73,7 @@ test('dealer round robin', function (t) {
   })
 
   two.received = []
-  two.on('message', function (msg) {
+  two.on('data', function (msg) {
     two.received.push(msg[1])
     if (two.received.length === 5) {
       t.ok(validateArr(two.received, ['2', '4', '6', '8', '0']), 'received all')
@@ -107,7 +107,7 @@ test('router fair queue', function (t) {
     , two = new DealerSocket()
     , router = new RouterSocket()
 
-  t.plan(1)
+  t.plan(8)
   t.on('end', function () {
     one.close()
     two.close()
@@ -115,15 +115,6 @@ test('router fair queue', function (t) {
   })
 
   router.bind('tcp://*:*')
-
-  router.received = []
-  router.on('message', function (msg) {
-    router.received.push(msg[1])
-    if (router.received.length === 8) {
-      t.ok(validateArr(router.received, ['1', '1', '2', '2', '3', '3', '4', '4']), 'received all')
-      t.end()
-    }
-  })
 
   // HACK?
   router._servers[0].on('listening', function () {
@@ -136,5 +127,16 @@ test('router fair queue', function (t) {
       two.send(msg)
     })
     vent.write('1234')
+
+    setTimeout(function () {
+      t.ok(router.read()[1] == '1', 'foo')
+      t.ok(router.read()[1] == '1', 'foo')
+      t.ok(router.read()[1] == '2', 'foo')
+      t.ok(router.read()[1] == '2', 'foo')
+      t.ok(router.read()[1] == '3', 'foo')
+      t.ok(router.read()[1] == '3', 'foo')
+      t.ok(router.read()[1] == '4', 'foo')
+      t.ok(router.read()[1] == '4', 'foo')
+    }, 100)
   })
 })
