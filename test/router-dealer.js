@@ -101,3 +101,40 @@ test('dealer round robin', function (t) {
     checkListening()
   })
 })
+
+test('router fair queue', function (t) {
+  var one = new DealerSocket()
+    , two = new DealerSocket()
+    , router = new RouterSocket()
+
+  t.plan(1)
+  t.on('end', function () {
+    one.close()
+    two.close()
+    router.close()
+  })
+
+  router.bind('tcp://*:*')
+
+  router.received = []
+  router.on('message', function (msg) {
+    router.received.push(msg[1])
+    if (router.received.length === 8) {
+      t.ok(validateArr(router.received, ['1', '1', '2', '2', '3', '3', '4', '4']), 'received all')
+      t.end()
+    }
+  })
+
+  // HACK?
+  router._servers[0].on('listening', function () {
+    one.connect(router._servers[0].address())
+    two.connect(router._servers[0].address())
+
+    var vent = new Smasher({ min: 1, max: 1 })
+    vent.on('data', function (msg) {
+      one.send(msg)
+      two.send(msg)
+    })
+    vent.write('1234')
+  })
+})
