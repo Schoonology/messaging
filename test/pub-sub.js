@@ -12,7 +12,7 @@ test('pub bound tcp, no filter', function (t) {
 
   pub.bind('tcp://*:*')
 
-  sub.on('message', function (msg) {
+  sub.on('data', function (msg) {
     t.fail('received message')
   })
 
@@ -28,8 +28,8 @@ test('pub bound tcp, no filter', function (t) {
     sub.connect(pub._servers[0].address())
 
     pub._servers[0].on('connection', function () {
-      pub.send('1234567890')
-      pub.send('0987654321')
+      pub.write('1234567890')
+      pub.write('0987654321')
     })
   })
 })
@@ -44,7 +44,7 @@ test('pub bound tcp, single filter', function (t) {
 
   sub.subscribe('1234')
 
-  sub.on('message', function (msg) {
+  sub.on('data', function (msg) {
     t.ok(msg.length, 'message has 1 frame')
     t.ok(msg[0] == '1234567890', 'frame matches')
   })
@@ -61,8 +61,8 @@ test('pub bound tcp, single filter', function (t) {
     sub.connect(pub._servers[0].address())
 
     pub._servers[0].on('connection', function () {
-      pub.send('1234567890')
-      pub.send('0987654321')
+      pub.write('1234567890')
+      pub.write('0987654321')
     })
   })
 })
@@ -75,7 +75,7 @@ test('pub bound tcp, single filter, frame boundary', function (t) {
 
   sub.subscribe('1234')
 
-  sub.on('message', function (msg) {
+  sub.on('data', function (msg) {
     t.fail('received message')
   })
 
@@ -91,9 +91,9 @@ test('pub bound tcp, single filter, frame boundary', function (t) {
     sub.connect(pub._servers[0].address())
 
     pub._servers[0].on('connection', function () {
-      pub.send(['12', '34567890'])
-      pub.send(['09', '87654321'])
-      pub.send(['', '1234'])
+      pub.write(['12', '34567890'])
+      pub.write(['09', '87654321'])
+      pub.write(['', '1234'])
     })
   })
 })

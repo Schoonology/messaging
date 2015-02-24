@@ -30,7 +30,7 @@ test('router bound tcp', function (t) {
     router.write(msg)
   })
 
-  dealer.on('message', function (msg) {
+  dealer.on('data', function (msg) {
     t.ok(msg.length === 1, 'message has 1 frames')
     t.ok(msg[0] == '0987654321', 'body matches')
 
@@ -40,7 +40,7 @@ test('router bound tcp', function (t) {
     t.end()
   })
 
-  dealer.send('1234567890')
+  dealer.write('1234567890')
 
   // HACK?
   router._servers[0].on('listening', function () {
@@ -87,7 +87,7 @@ test('dealer round robin', function (t) {
     if (listening === 2) {
       var vent = new Smasher({ min: 1, max: 1 })
       vent.on('data', function (msg) {
-        dealer.send(msg)
+        dealer.write(msg)
       })
       vent.write('1234567890')
     }
@@ -123,8 +123,8 @@ test('router fair queue', function (t) {
 
     var vent = new Smasher({ min: 1, max: 1 })
     vent.on('data', function (msg) {
-      one.send(msg)
-      two.send(msg)
+      one.write(msg)
+      two.write(msg)
     })
     vent.write('1234')
 
