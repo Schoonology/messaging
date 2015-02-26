@@ -42,9 +42,8 @@ test('router bound tcp', function (t) {
 
   dealer.write('1234567890')
 
-  // HACK?
-  router._servers[0].on('listening', function () {
-    dealer.connect(router._servers[0].address())
+  router.on('listening', function (endpoint) {
+    dealer.connect(endpoint)
   })
 })
 
@@ -81,10 +80,8 @@ test('dealer round robin', function (t) {
   })
 
   // HACK?
-  var listening = 0
   function checkListening() {
-    listening++
-    if (listening === 2) {
+    if (dealer._peers.length === 2) {
       var vent = new Smasher({ min: 1, max: 1 })
       vent.on('data', function (msg) {
         dealer.write(msg)
@@ -92,13 +89,14 @@ test('dealer round robin', function (t) {
       vent.write('1234567890')
     }
   }
-  one._servers[0].on('listening', function () {
-    dealer.connect(one._servers[0].address())
-    checkListening()
+
+  one.on('listening', function (endpoint) {
+    dealer.connect(endpoint)
+    dealer.on('connect', checkListening)
   })
-  two._servers[0].on('listening', function () {
-    dealer.connect(two._servers[0].address())
-    checkListening()
+  two.on('listening', function (endpoint) {
+    dealer.connect(endpoint)
+    dealer.on('connect', checkListening)
   })
 })
 
@@ -116,10 +114,9 @@ test('router fair queue', function (t) {
 
   router.bind('tcp://*:*')
 
-  // HACK?
-  router._servers[0].on('listening', function () {
-    one.connect(router._servers[0].address())
-    two.connect(router._servers[0].address())
+  router.on('listening', function (endpoint) {
+    one.connect(endpoint)
+    two.connect(endpoint)
 
     var vent = new Smasher({ min: 1, max: 1 })
     vent.on('data', function (msg) {
@@ -137,6 +134,7 @@ test('router fair queue', function (t) {
       t.ok(router.read()[1] == '3', 'foo')
       t.ok(router.read()[1] == '4', 'foo')
       t.ok(router.read()[1] == '4', 'foo')
+      t.end()
     }, 100)
   })
 })

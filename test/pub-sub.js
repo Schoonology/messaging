@@ -23,10 +23,10 @@ test('pub bound tcp, no filter', function (t) {
     t.end()
   }, 100)
 
-  // HACK?
-  pub._servers[0].on('listening', function () {
-    sub.connect(pub._servers[0].address())
+  pub.on('listening', function (endpoint) {
+    sub.connect(endpoint)
 
+    // HACK?
     pub._servers[0].on('connection', function () {
       pub.write('1234567890')
       pub.write('0987654321')
@@ -56,10 +56,10 @@ test('pub bound tcp, single filter', function (t) {
     t.end()
   }, 100)
 
-  // HACK?
-  pub._servers[0].on('listening', function () {
-    sub.connect(pub._servers[0].address())
+  pub.on('listening', function (endpoint) {
+    sub.connect(endpoint)
 
+    // HACK?
     pub._servers[0].on('connection', function () {
       pub.write('1234567890')
       pub.write('0987654321')
@@ -86,10 +86,10 @@ test('pub bound tcp, single filter, frame boundary', function (t) {
     t.end()
   }, 100)
 
-  // HACK?
-  pub._servers[0].on('listening', function () {
-    sub.connect(pub._servers[0].address())
+  pub.on('listening', function (endpoint) {
+    sub.connect(endpoint)
 
+    // HACK?
     pub._servers[0].on('connection', function () {
       pub.write(['12', '34567890'])
       pub.write(['09', '87654321'])
