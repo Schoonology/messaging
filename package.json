@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/Schoonology/messaging",
   "devDependencies": {
+    "concat-stream": "~1.4.7",
     "faucet": "0.0.1",
-    "tape": "~3.5.0"
+    "tape": "~3.5.0",
+    "through2": "~0.6.3"
   },
   "dependencies": {
     "network-byte-order": "~0.2.0"
