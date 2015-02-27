@@ -1,50 +1,13 @@
-var assert = require('assert')
-  , fs = require('fs')
-  , path = require('path')
-  , concat = require('concat-stream')
-  , through = require('through2')
-  , PubSocket = require('../lib/pub')
-  , SubSocket = require('../lib/sub')
-  , Smasher = require('./fixtures/smasher')
-  , ENDPOINT = 'tcp://0.0.0.0:1234'
-  , FILE_PATH = path.join(__dirname, 'fixtures', 'long')
-  , file = fs.createReadStream(FILE_PATH)
-  , pub = new PubSocket()
-  , sub = new SubSocket()
+'use strict'
 
-sub
-  .bind(ENDPOINT)
-  .subscribe('')
-  .pipe(through.obj(function (chunk, enc, callback) {
-    this.push(String(chunk))
-    callback()
-  }))
-  .pipe(concat(function (readme) {
-    assert(readme === fs.readFileSync(FILE_PATH, 'utf8'), 'content matches')
-  }))
+var fork = require('child_process').fork
+  , test = require('tape')
 
-pub
-  .connect(ENDPOINT)
-  .on('connect', function () {
-    file
-      .pipe(new Smasher())
-      .pipe(pub)
-  })
-
-file.on('end', function () {
-  pub.close()
-  sub.close()
-})
-
-process.on('exit', function () {
-  assert(pub._clients.length === 0, 'pub no clients')
-  assert(pub._servers.length === 0, 'pub no servers')
-  assert(pub._peers.length === 0, 'pub no peers')
-  assert(pub._queue.length === 0, 'pub no queue')
-  assert(sub._clients.length === 0, 'sub no clients')
-  assert(sub._servers.length === 0, 'sub no servers')
-  assert(sub._peers.length === 0, 'sub no peers')
-  assert(sub._queue.length === 0, 'sub no queue')
-
-  console.log('Success.')
+// Shim for child process tests.
+test('kitchen sink', function (t) {
+  fork(require.resolve('./fixtures/kitchen-sink-child'))
+    .on('exit', function (code) {
+      t.equal(code, 0, 'exit code')
+      t.end()
+    })
 })
