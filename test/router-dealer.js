@@ -47,6 +47,41 @@ test('router bound tcp', function (t) {
   })
 })
 
+test('dealer bound ipc', function (t) {
+  var router = new RouterSocket()
+    , dealer = new DealerSocket()
+
+  t.plan(5)
+
+  dealer.bind('tcp://*:*')
+
+  router.on('data', function (msg) {
+    t.ok(msg.length === 2, 'message has 2 frames')
+    t.ok(msg[0], 'identity exists')
+    t.ok(msg[1] == '1234567890', 'body matches')
+
+    msg[1] = String(msg[1]).split('').reverse().join('')
+
+    router.write(msg)
+  })
+
+  dealer.on('data', function (msg) {
+    t.ok(msg.length === 1, 'message has 1 frames')
+    t.ok(msg[0] == '0987654321', 'body matches')
+
+    router.close()
+    dealer.close()
+
+    t.end()
+  })
+
+  dealer.write('1234567890')
+
+  dealer.on('listening', function (endpoint) {
+    router.connect(endpoint)
+  })
+})
+
 test('dealer round robin', function (t) {
   var one = new RouterSocket()
     , two = new RouterSocket()
