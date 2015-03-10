@@ -3,13 +3,13 @@ var assert = require('assert')
   , path = require('path')
   , concat = require('concat-stream')
   , through = require('through2')
-  , messaging = require('../../')
+  , onemq = require('../../')
   , Smasher = require('./smasher')
   , ENDPOINT = 'tcp://0.0.0.0:1234'
   , FILE_PATH = path.join(__dirname, 'long')
   , file = fs.createReadStream(FILE_PATH)
-  , pub = messaging.socket('pub')
-  , sub = messaging.socket('sub')
+  , pub = onemq.socket('pub')
+  , sub = onemq.socket('sub')
 
 sub
   .bind(ENDPOINT)

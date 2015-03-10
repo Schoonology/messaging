@@ -60,7 +60,7 @@ test('tcp wildcard connection', function (t) {
 })
 
 test('ipc explicit connection', function (t) {
-  var server = common.createServer('ipc:///tmp/messaging-test.sock')
+  var server = common.createServer('ipc:///tmp/onemq-test.sock')
 
   t.plan(4)
   t.ok(server, 'server exists')
@@ -79,7 +79,7 @@ test('ipc explicit connection', function (t) {
   })
 
   server.on('listening', function () {
-    var client = common.createClientSocket('ipc:///tmp/messaging-test.sock')
+    var client = common.createClientSocket('ipc:///tmp/onemq-test.sock')
 
     t.ok(client, 'client exists')
 
