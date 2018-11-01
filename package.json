@@ -23,6 +23,7 @@
     "through2": "~0.6.3"
   },
   "dependencies": {
+    "debug": "~2.1.1",
     "mi": "~1.0.0",
     "network-byte-order": "~0.2.0"
   }
